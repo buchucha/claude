@@ -6,7 +6,7 @@
  */
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { getImagesByAccessionNumber, OrthancImageResult, getOrthancBaseUrl } from '../services/Orthancservice';
+import { getImagesByAccessionNumber, OrthancImageResult, getOrthancBaseUrl, setOrthancBaseUrl } from '../services/Orthancservice';
 interface DicomViewerProps {
   accessionNumber: string;
   patientName?: string;
@@ -40,9 +40,23 @@ export const DicomViewer: React.FC<DicomViewerProps> = ({ accessionNumber, patie
       setError(null);
       
       if (!getOrthancBaseUrl()) {
-        setError('Orthanc 서버 주소가 설정되지 않았습니다.\nSettings → Image Server URL에 입력해주세요.');
-        setIsLoading(false);
-        return;
+        // clinic_settings에서 직접 조회 시도
+        try {
+          const { supabase } = await import('../services/supabaseClient');
+          const { data } = await supabase.from('clinic_settings').select('*').single();
+          const url = data?.imageServerUrl || data?.image_server_url || '';
+          if (url) {
+            setOrthancBaseUrl(url);
+          } else {
+            setError('Orthanc 서버 주소가 설정되지 않았습니다.\nSettings → Image Server URL에 입력해주세요.');
+            setIsLoading(false);
+            return;
+          }
+        } catch {
+          setError('Orthanc 서버 주소가 설정되지 않았습니다.\nSettings → Image Server URL에 입력해주세요.');
+          setIsLoading(false);
+          return;
+        }
       }
 
       const result = await getImagesByAccessionNumber(accessionNumber);

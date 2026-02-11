@@ -54,7 +54,8 @@ const App: React.FC = () => {
       const { data: sData } = await supabase.from('clinic_settings').select('*').single();
       if (sData) {
         setClinicSettings(sData);
-        if (sData.imageServerUrl) setOrthancBaseUrl(sData.imageServerUrl);
+        const orthancUrl = sData.imageServerUrl || sData.image_server_url || '';
+        if (orthancUrl) setOrthancBaseUrl(orthancUrl);
       }
     } catch (e) { console.error("Data fetch error:", e); }
   }, []);
@@ -204,7 +205,7 @@ const App: React.FC = () => {
       {isSettingsOpen && (
         <SettingsModal 
           isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} vets={vets} clinicSettings={clinicSettings}
-          onUpdateClinicSettings={async (s) => { await supabase.from('clinic_settings').upsert(s); if (s.imageServerUrl) setOrthancBaseUrl(s.imageServerUrl); fetchData(); }}
+          onUpdateClinicSettings={async (s) => { await supabase.from('clinic_settings').upsert(s); const url = s.imageServerUrl || (s as any).image_server_url || ''; if (url) setOrthancBaseUrl(url); fetchData(); }}
           onAddVet={async (v) => { await supabase.from('veterinarians').insert([v]); fetchData(); }}
           onRemoveVet={async (id) => { await supabase.from('veterinarians').delete().eq('id', id); fetchData(); }}
         />
