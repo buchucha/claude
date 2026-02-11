@@ -7,7 +7,7 @@ import { SOAPEditor } from './SOAPEditor';
 import { HistoryCard } from './HistoryCard';
 import { OrderModal } from './OrderModal';
 import { SelectionModal } from './SelectionModal';
-import { PacsViewer } from './PacsViewer';
+import { DicomViewer } from './DicomViewer';
 import { 
   getDiagnosticSuggestions, 
   getDifferentialDiagnoses, 
@@ -48,7 +48,8 @@ export const ConsultationPage: React.FC<ConsultationPageProps> = ({
   }>({ isOpen: false, title: '', icon: '', field: 'subjective', options: [], isLoading: false });
 
   const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
-  const [isPacsOpen, setIsPacsOpen] = useState(false);
+  const [dicomViewerAccession, setDicomViewerAccession] = useState<string | null>(null);
+  const [dicomViewerPatientName, setDicomViewerPatientName] = useState<string>('');
 
   const [sidebarWidth, setSidebarWidth] = useState(300);
   const [isResizingSidebar, setIsResizingSidebar] = useState(false);
@@ -258,8 +259,27 @@ export const ConsultationPage: React.FC<ConsultationPageProps> = ({
               ))}
             </div>
             <div className="h-4 w-px bg-slate-300"></div>
-            <button 
-              onClick={() => setIsPacsOpen(true)} 
+            <button
+              onClick={async () => {
+                if (!currentSoap.id) {
+                  alert('⚠️ 진료 기록을 먼저 저장해 주세요.');
+                  return;
+                }
+                const { data } = await supabase
+                  .from('department_orders')
+                  .select('accession_number')
+                  .eq('soap_id', currentSoap.id)
+                  .eq('department', 'X-ray')
+                  .order('created_at', { ascending: false })
+                  .limit(1)
+                  .single();
+                if (data?.accession_number) {
+                  setDicomViewerAccession(data.accession_number);
+                  setDicomViewerPatientName(activePatient?.name || '');
+                } else {
+                  alert('이 차트에 연동된 X-ray 오더가 없거나 Accession Number가 없습니다.');
+                }
+              }}
               className="px-3 py-1.5 bg-blue-50 text-blue-600 border border-blue-200 rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-blue-600 hover:text-white transition-all shadow-sm"
             >
               <i className="fas fa-x-ray mr-2"></i> Open PACS
@@ -376,7 +396,7 @@ export const ConsultationPage: React.FC<ConsultationPageProps> = ({
           }} 
         />
       )}
-      {isPacsOpen && activePatient && (<PacsViewer chartNumber={activePatient.chartNumber || ''} patientName={activePatient.name} onClose={() => setIsPacsOpen(false)} />)}
+      {dicomViewerAccession && (<DicomViewer accessionNumber={dicomViewerAccession} patientName={dicomViewerPatientName} onClose={() => setDicomViewerAccession(null)} />)}
       {aiModal.isOpen && (<SelectionModal isOpen={aiModal.isOpen} onClose={() => setAiModal(prev => ({ ...prev, isOpen: false }))} title={aiModal.title} icon={aiModal.icon} options={aiModal.options} isLoading={aiModal.isLoading} onConfirm={(selected) => applyAI(selected)} />)}
     </div>
   );
