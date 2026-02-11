@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>VetPulse EMR - Professional Veterinary Charting</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Google Identity Services Library -->
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  
+  <!-- Mobile Drag & Drop Polyfill for iPad/Tablet -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/mobile-drag-drop@2.3.0-rc.2/default.css">
+  <script src="https://cdn.jsdelivr.net/npm/mobile-drag-drop@2.3.0-rc.2/index.min.js"></script>
+  <!-- Optional: Scroll behaviour -->
+  <script src="https://cdn.jsdelivr.net/npm/mobile-drag-drop@2.3.0-rc.2/scroll-behaviour.min.js"></script>
+
+  <script>
+    // 브라우저에서 process.env.API_KEY 사용 시 에러를 방지하기 위한 전역 객체 설정
+    window.process = window.process || { env: {} };
+
+    // Initialize Mobile Drag Drop Polyfill safely
+    document.addEventListener('DOMContentLoaded', () => {
+      try {
+        var options = {};
+        // Safely check for scroll behaviour to prevent crash
+        if (window.MobileDragDrop && window.MobileDragDrop.scrollBehaviour) {
+          options.dragImageTranslateOverride = window.MobileDragDrop.scrollBehaviour.scrollBehaviourDragImageTranslateOverride;
+        }
+        
+        if (window.MobileDragDrop) {
+          window.MobileDragDrop.polyfill(options);
+          
+          // Fix for iOS Safari scrolling issues during drag
+          window.addEventListener('touchmove', function() {}, {passive: false});
+        }
+      } catch (e) {
+        console.warn('Mobile Drag Drop Polyfill failed to initialize:', e);
+      }
+    });
+  </script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+    
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #f8fafc;
+      color: #0f172a;
+      margin: 0;
+      padding: 0;
+      /* 모바일에서 꾹 눌렀을 때 텍스트 선택 방지 (앱 같은 느낌) */
+      -webkit-user-select: none;
+      user-select: none;
+      /* 터치 하이라이트 색상 제거 */
+      -webkit-tap-highlight-color: transparent;
+      /* 오버스크롤 바운스 효과 제거 (앱처럼 고정) */
+      overscroll-behavior: none;
+    }
+
+    /* 입력창에서는 텍스트 선택 허용 */
+    input, textarea, [contenteditable="true"] {
+      -webkit-user-select: text;
+      user-select: text;
+    }
+
+    ::selection {
+      background-color: #3b82f6;
+      color: white;
+    }
+
+    /* 태블릿 환경: 스크롤바는 기능만 유지하고 시각적으로 숨김 (깔끔함 유지) */
+    ::-webkit-scrollbar {
+      width: 0px;
+      height: 0px;
+      background: transparent;
+    }
+    
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 4px; /* 필요한 곳은 아주 얇게 */
+      height: 4px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 10px;
+    }
+    
+    /* 드래그 앤 드롭 시 잔상 스타일 */
+    .dnd-poly-drag-image {
+      opacity: 0.8 !important;
+      border-radius: 8px !important;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1) !important;
+    }
+  </style>
+<script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@^19.2.3",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+    "react/": "https://esm.sh/react@^19.2.3/",
+    "@google/genai": "https://esm.sh/@google/genai@^1.38.0",
+    "@supabase/supabase-js": "https://esm.sh/@supabase/supabase-js@^2.91.1"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+<body>
+  <div id="root"></div>
+  <script type="module" src="/index.tsx"></script>
+</body>
+</html>

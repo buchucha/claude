@@ -1,0 +1,7 @@
+{
+  "name": "3.2.3",
+  "description": "혈검 연동 셋업",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
