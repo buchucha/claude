@@ -11,6 +11,7 @@ import { AppointmentPage } from './components/AppointmentPage';
 import { BillingPage } from './components/BillingPage';
 import { SettingsModal } from './components/SettingsModal';
 import { ImageModal } from './components/ImageModal';
+import { setOrthancBaseUrl } from './services/Orthancservice';
 
 const ADMIN_EMAIL = "mindonesia0000@gmail.com";
 
@@ -51,7 +52,10 @@ const App: React.FC = () => {
       const { data: aData } = await supabase.from('appointments').select('*');
       if (aData) setAppointments(aData.map(mapDbAppointment));
       const { data: sData } = await supabase.from('clinic_settings').select('*').single();
-      if (sData) setClinicSettings(sData);
+      if (sData) {
+        setClinicSettings(sData);
+        if (sData.imageServerUrl) setOrthancBaseUrl(sData.imageServerUrl);
+      }
     } catch (e) { console.error("Data fetch error:", e); }
   }, []);
 
@@ -200,7 +204,7 @@ const App: React.FC = () => {
       {isSettingsOpen && (
         <SettingsModal 
           isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} vets={vets} clinicSettings={clinicSettings}
-          onUpdateClinicSettings={async (s) => { await supabase.from('clinic_settings').upsert(s); fetchData(); }}
+          onUpdateClinicSettings={async (s) => { await supabase.from('clinic_settings').upsert(s); if (s.imageServerUrl) setOrthancBaseUrl(s.imageServerUrl); fetchData(); }}
           onAddVet={async (v) => { await supabase.from('veterinarians').insert([v]); fetchData(); }}
           onRemoveVet={async (id) => { await supabase.from('veterinarians').delete().eq('id', id); fetchData(); }}
         />
